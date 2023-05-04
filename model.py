@@ -1,15 +1,34 @@
 import numpy as np
 from sklearn.decomposition import IncrementalPCA
-from sklearn.metrics.pairwise import cosine_similarity
 
 
+def make_tasks(X, y, n_tasks, n_spc):
+    """ Arange data into binary classification tasks based on class label """
+
+    TX = np.full((n_tasks, 2 * n_spc, X.shape[1]), np.nan, dtype=np.float32) 
+    Ty = np.full((n_tasks, 2 * n_spc), -1, dtype=np.int8)
+
+    for i in range(0, 2 * n_tasks, 2):
+
+        idx = int(i / 2)
+
+        TX[idx] = np.vstack((X[y == i][:n_spc], 
+                             X[y == (i + 1)][:n_spc])) 
+
+        Ty[idx] = np.concatenate((y[y == i][:n_spc], 
+                                  y[y == (i + 1)][:n_spc]))
+
+    return TX, Ty
+
+    
 class ART_IPCA:
-    """
-    """
+    """ Model class in the style of scikit-learn """
+    
     def __init__(self, n_components, sim_metric, rho):
+        
         # Hyperparamaters
         self.n_components = n_components
-        self.sim_metric = sim_metric # NEEDS TO BE FROM SKLEARN!!
+        self.sim_metric = sim_metric  # Choose metric from sklearn.metrics.pairwise
         self.rho = rho
         
         # Model parameters
@@ -19,30 +38,8 @@ class ART_IPCA:
         self.ipca = None
     
     
-    @staticmethod
-    def make_tasks(X_train, y_train, n_train_spc, n_tasks):
-        """
-        """
-    
-        TX_train = np.full((n_tasks, 2 * n_train_spc, X_train.shape[1]), np.nan, dtype=np.float32) 
-        Ty_train = np.full((n_tasks, 2 * n_train_spc), -1, dtype=np.int8)
-
-        for i in range(0, 2 * n_tasks, 2):
-
-            idx = int(i / 2)
-
-            TX_train[idx] = np.vstack((X_train[y_train == i][:n_train_spc], 
-                                       X_train[y_train == (i + 1)][:n_train_spc])) 
-
-            Ty_train[idx] = np.concatenate((y_train[y_train == i][:n_train_spc], 
-                                            y_train[y_train == (i + 1)][:n_train_spc]))
-
-        return TX_train, Ty_train
-    
-    
     def fit(self, TX_train, Ty_train):
-        """
-        """
+        """ Train the model """
 
         n_tasks = TX_train.shape[0]
 
@@ -116,8 +113,7 @@ class ART_IPCA:
     
     
     def predict(self, X):
-        """
-        """
+        """ Make predictions """
 
         # Note: similarity comparison between 2D arrays
         sim = self.sim_metric(self.ipca.transform(X), self.ipca.transform(self.W))

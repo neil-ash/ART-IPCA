@@ -1,42 +1,11 @@
 import numpy as np
 from sklearn.decomposition import IncrementalPCA
-from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.metrics import accuracy_score
 
 
-def make_tasks_train_test(X_train, y_train, X_test, y_test, n_train_spc, n_test_spc, n_tasks):
-    """
-    """
-    
-    TX_train = np.full((n_tasks, 2 * n_train_spc, X_train.shape[1]), np.nan, dtype=np.float32) 
-    Ty_train = np.full((n_tasks, 2 * n_train_spc), -1, dtype=np.int8)
-
-    TX_test = np.full((n_tasks, 2 * n_test_spc, X_test.shape[1]), np.nan, dtype=np.float32) 
-    Ty_test = np.full((n_tasks, 2 * n_test_spc), -1, dtype=np.int8)
-
-    for i in range(0, 2 * n_tasks, 2):
-
-        idx = int(i / 2)
-
-        TX_train[idx] = np.vstack((X_train[y_train == i][:n_train_spc], 
-                                    X_train[y_train == (i + 1)][:n_train_spc])) 
-
-        Ty_train[idx] = np.concatenate((y_train[y_train == i][:n_train_spc], 
-                                         y_train[y_train == (i + 1)][:n_train_spc]))
-
-        TX_test[idx] = np.vstack((X_test[y_test == i][:n_test_spc], 
-                                   X_test[y_test == (i + 1)][:n_test_spc]))
-
-        Ty_test[idx] = np.concatenate((y_test[y_test == i][:n_test_spc], 
-                                        y_test[y_test == (i + 1)][:n_test_spc]))
-
-    return TX_train, Ty_train, TX_test, Ty_test
-
-
-def ART_IPCA_train_test(TX_train, Ty_train, TX_test, Ty_test, 
-                        n_components=200, sim_metric=cosine_similarity, rho=0.5):
-    """
-    """
+def ART_IPCA_all_metrics(TX_train, Ty_train, TX_test, Ty_test, 
+                        n_components, sim_metric, rho):
+    """ Model trained and evaluated sequentially to get 'meta-tables' for evaluation """
 
     n_tasks = TX_train.shape[0]
     
