@@ -3,8 +3,7 @@ from sklearn.decomposition import IncrementalPCA
 from sklearn.metrics import accuracy_score
 
 
-def ART_IPCA_all_metrics(TX_train, Ty_train, TX_test, Ty_test, 
-                        n_components, sim_metric, rho):
+def ART_IPCA_all_metrics(TX_train, Ty_train, TX_test, Ty_test, n_components, sim_metric, rho):
     """ Model trained and evaluated sequentially to get 'meta-tables' for evaluation """
 
     n_tasks = TX_train.shape[0]
